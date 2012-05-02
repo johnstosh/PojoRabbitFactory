@@ -1,0 +1,309 @@
+	---------------------
+ 	Welcome to Jemos PODAM (POjo DAta Mocker)
+	---------------------
+	Marco Tedone
+	---------------------
+
+Introduction  
+
+* Using PODAM in your project
+
+  To see how you could start using PODAM straight away, please refer to {{{./usage.html} the usage page}}.
+
+* How to use PODAM API        
+  
++-----------------------------------
+PodamFactory factory = new PodamFactoryImpl(); //This will use the default Random Data Provider Strategy
+Pojo myPojo = factory.manufacturePojo(Pojo.class);
++-----------------------------------
+
+  PODAM allows users to customise the way data are assigned in several ways: 
+  
+  * By defining a global strategy
+  
+  * By defining strategies at the attribute level
+  
+  * For primitive and wrapper types, to customise the numeric value through annotations
+  
+  * For String to customise the string value and length through annotation
+  
+  * To skip a certain attribute by using the <@PodamExclude> annotation
+  
+** Defining a global data provider strategy
+
+   The default strategy for PODAM is Random values. However users can define their own global strategy by providing an
+   implementation of the <<DataProviderStrategy>> interface, as follows: 
+  
++-----------------------------------
+
+DataProviderStrategy strategy = new MyDataProviderStrategy();
+PodamFactory factory = new PodamFactoryImpl(strategy);
+
+Pojo myPojo = factory.manufacturePojo(Pojo.class);
+
++-----------------------------------
+
+** Defining an attribute-level strategy
+
+  PODAM allows also users to define data strategies at the attribute level: this includes the capability to define
+  custom strategies for elements and keys in collections, maps and arrays. 
+  In order to define an attribute-level strategy, users will need to: 
+  
+  * Provide an implementation of the <<AttributeStrategy\<T\>>> interface
+  
+  * Use the <<@PodamStrategyValue>> annotation
+  
+  Example: 
+  
++-----------------------------------
+
+@PodamStrategyValue(PostCodeStrategy.class)
+private String postCode;
+
+@PodamStrategyValue(MyBirthdayStrategy.class)
+private Calendar myBirthday;
+
++-----------------------------------
+
+  In this example I defined two attribute-level strategies: 
+  
+  * PostCodeStrategy to create a UK-like postcode
+  
+  * MyBirthdayStrategy to create a Calendar which contains the exact time of my birth
+  
+  The <PostCodeStrategy> class looks like the following:
+  
++-----------------------------------
+/**
+ * 
+ */
+package uk.co.jemos.podam.test.strategies;
+
+import uk.co.jemos.podam.api.AttributeStrategy;
+import uk.co.jemos.podam.exceptions.PodamMockeryException;
+import uk.co.jemos.podam.test.utils.PodamTestConstants;
+
+/**
+ * A test strategy to manufacture UK-like post codes.
+ * 
+ * @author mtedone
+ * 
+ */
+public class PostCodeStrategy implements AttributeStrategy<String> {
+	
+	/**
+	 * It returns an English post code.
+	 * <p>
+	 * This is just an example. More elaborated code could the implemented by
+	 * this method. This is just to proof the point.
+	 * </p>
+	 * 
+	 * {@inheritDoc}
+	 */
+	public String getValue() throws PodamMockeryException {
+		return PodamTestConstants.POST_CODE;
+	}
+	
+}
+
++-----------------------------------
+
+  There is nothing special about the above class: it's job is just to provide a value of the right type.
+  
+  The <MyBirthdayStrategy> class looks like the following: 
+  
++-----------------------------------
+
+/**
+ * 
+ */
+package uk.co.jemos.podam.test.strategies;
+
+import java.util.Calendar;
+
+import uk.co.jemos.podam.api.AttributeStrategy;
+import uk.co.jemos.podam.exceptions.PodamMockeryException;
+import uk.co.jemos.podam.test.utils.PodamTestUtils;
+
+/**
+ * An attribute strategy which returns a Calendar object set with my DOB.
+ *
+ * @author mtedone
+ * 
+ */
+public class MyBirthdayStrategy implements AttributeStrategy<Calendar> {
+
+	/**
+	 * It returns a {@link Calendar} object set with the exact date of my
+	 * birthday.
+	 * 
+	 * {@inheritDoc}
+	 */
+	public Calendar getValue() throws PodamMockeryException {
+
+		Calendar myBirthday = PodamTestUtils.getMyBirthday();
+
+		return myBirthday;
+	}
+		
+}
+
+
++-----------------------------------
+
+  The capability to customise the strategy PODAM uses to fill attribute data is extended to container-like data
+  structures, such as Collections, Maps and Arrays; however for these data structures use the <@PodamCollection>
+  annotation. Please refer to {{{./annotations.html} The annotation}} page for more details.
+  
+  Example on how to use PODAM custom attribute strategy to fill collection elements: 
+  
++-----------------------------------
+
+@PodamCollection(nbrElements = 2, collectionElementStrategy = MyBirthdayStrategy.class)
+private List<Calendar> myBirthdays = new ArrayList<Calendar>();
+
++-----------------------------------
+
+  Example on how to use PODAM custom attribute strategy to fill Map keys and elements. Please note that <@PodamCollection> offers 
+  also the possibility to define a strategy to set the values for keys in a Map, through the <mapKeyStrategy> attribute:  
+  
++-----------------------------------
+
+@PodamCollection(nbrElements = 2, mapElementStrategy = MyBirthdayStrategy.class)
+private Map<String, Calendar> myBirthdaysMap = new HashMap<String, Calendar>();
+
++-----------------------------------     
+
+  Example on how to use PODAM custom attribute strategy to fill array elements:
+  
++-----------------------------------
+
+@PodamCollection(nbrElements = 2, collectionElementStrategy = MyBirthdayStrategy.class)
+private Calendar[] myBirthdaysArray;
+
++-----------------------------------     
+  
+  PODAM will use the MyBirthdayStrategy to set the value for the two array elements. 
+  
+  
+
+** Customising PODAM behaviour for primitives and wrapper types
+
+  Primitive and Wrapper type values can be customised through annotations. 
+  
++-----------------------------------
+@PodamDoubleValue(minValue = PodamTestConstants.NUMBER_DOUBLE_MIN_VALUE, maxValue = PodamTestConstants.NUMBER_DOUBLE_MAX_VALUE)
+private double doubleFieldWithMinAndMaxValue;
++-----------------------------------
+  
+  Please note that by contract (DataProviderStrategy) min and max values are inclusive. 
+  
+  For a full list of supported annotations, please refer to the {{{./annotations.html} Annotations}} page.
+  
+  To know more about how PODAM works, please refer to the {{{./walk-through-example.html} The walk-through example}} page 
+  or to the {{{./corner-cases.html} Corner Cases }} page on the left menu.
+  
+** Using PODAM with Spring
+
+  You can also use PODAM with Spring: 
+  
+  * Define the Data Provider Strategy as a bean if you don't want the default (Random data)
+  
+  * Define PodamFactory bean, initialised with the Data Provider Strategy
+  
+  * Use the PodamFactory bean in your code
+  
+  []
+  
++-----------------------------------
+
+# Define your Spring app context
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+
+
+	<!-- The definition of the default strategy -->
+	<bean id="myDataProviderStrategy"
+		class="uk.co.jemos.podam.api.MyDataProviderStrategy"
+		factory-method="getInstance" />
+		
+	<!-- The definition of PODAM factory -->
+	<bean id="podamFactory" class="uk.co.jemos.podam.api.PodamFactoryImpl">
+	  <constructor-arg index="0" ref="myDataProviderStrategy" />
+	</bean>
+
+</beans>
++-----------------------------------
+
++-----------------------------------
+
+# Use Podam Factory in your code
+
+/**
+ * 
+ */
+package uk.co.jemos.podam.test.unit.integration;
+
+import javax.annotation.Resource;
+
+import junit.framework.Assert;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
+
+import uk.co.jemos.podam.api.PodamFactory;
+import uk.co.jemos.podam.test.dto.SimplePojoToTestSetters;
+
+/**
+ * @author mtedone
+ * 
+ */
+@ContextConfiguration(locations = {"classpath:podam-test-appContext.xml"})
+public class PodamFactoryInjectionIntegrationTest
+		extends	AbstractJUnit4SpringContextTests {
+	
+	/** The Podam Factory */
+	@Resource
+	private PodamFactory factory;
+	
+	@Before
+	public void init() {
+		Assert.assertNotNull("The PODAM factory cannot be null!", factory);
+		Assert.assertNotNull("The factory strategy cannot be null!",
+				factory.getStrategy());
+	}
+
+	@Test
+	public void testSimplePojo() {
+
+		SimplePojoToTestSetters pojo = factory
+				.manufacturePojo(SimplePojoToTestSetters.class);
+		Assert.assertNotNull("The pojo cannot be null!", pojo);
+
+		...etc
+	}
+}
++-----------------------------------
+
+
+  Please note that the data provider strategy cannot be changed upon instantiation. If you want to use a different data provider
+  strategy, you'll need to create a new instance of PodamFactory. This has been decided to preserve thread-safety and immutability
+  of PodamFactory.  
+  
+* How PODAM assigns values
+  
+  By default PODAM assigns random values to all its types. However, PODAM can be extended by providing a custom implementation
+  of the <uk.co.jemos.podam.api.DataProviderStrategy> interface. 
+  Please note that methods which return a numeric value between ranges should consider the ranges inclusive, as documented
+  in the interface Javadoc. 
+  
+  PODAM uses the <uk.co.jemos.podam.api.RandomDataProviderStrategy> class as default Data Provider implementation.
+  
+  To know more about how PODAM works, please refer to the {{{./walk-through-example.html} The walk-through example}} page 
+  or to the {{{./corner-cases.html} Corner Cases }} page on the left menu.  
+    
