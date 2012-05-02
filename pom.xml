@@ -7,15 +7,20 @@
 		<artifactId>oss-parent</artifactId>
 		<version>7</version>
 	</parent>
-
-
-	<groupId>uk.co.jemos.podam</groupId>
 	<artifactId>pojorabbitfactory</artifactId>
 	<version>3.0.2-SNAPSHOT</version> 
 	<packaging>jar</packaging>
 
 	<name>PojoRabbitFactory</name>
-	<description>PODAM is a tool to automatically fill POJO with data</description>
+	<description>The POJO Rabbit Factory
+
+What if you need a lot of objects -- a lot of lot of objects.  Or just 5.
+The POJO Rabbit Factory is your solution.  It will instantiate objects from your
+plain old Java classes, using values that you specify with annotations.
+
+
+This is a fork of Podam.
+Podam is a tool to automatically fill POJO's with data</description>
 	<url>http://www.jemos.eu/projects/podam/index.html</url>
 
 	<licenses>
@@ -252,7 +257,6 @@
 			</plugin>
 		</plugins>
 	</reporting>
-
-
+    <groupId>org.pojorabbitfactory</groupId>
 </project>
 
