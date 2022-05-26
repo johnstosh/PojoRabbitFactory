@@ -190,25 +190,25 @@ Podam is a tool to automatically fill POJO's with data</description>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
-			<version>3.0.5.RELEASE</version>
+			<version>5.3.20-RELEASE</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-beans</artifactId>
-			<version>5.2.22.RELEASE</version>
+			<version>5.3.20-RELEASE</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
-			<version>5.2.22.RELEASE</version>
+			<version>5.3.20-RELEASE</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
-			<version>5.2.22.RELEASE</version>
+			<version>5.3.20-RELEASE</version>
 			<scope>test</scope>
 		</dependency>		
 
